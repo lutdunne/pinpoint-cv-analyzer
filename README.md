@@ -2,7 +2,7 @@
 
 **PinPoint** is an AI-powered career assistant that helps students and job seekers improve their résumés, target job descriptions, and prepare for interviews — all in one platform.
 
-🚧 **Status:** In development  
+
 Built with **Next.js**, **PostgreSQL**, and the **OpenAI API**
 
 ## 🧩 Features (WIP)
@@ -23,4 +23,3 @@ Built with **Next.js**, **PostgreSQL**, and the **OpenAI API**
 
 ---
 
-💡 _“PinPoint helps you aim your résumé, focus your prep, and land your next role.”_
