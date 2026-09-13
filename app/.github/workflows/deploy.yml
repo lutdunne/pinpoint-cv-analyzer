@@ -1,0 +1,81 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  validate-and-test:
+    name: Validate and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Type Check & Build
+        # Next.js build includes type checking
+        run: npm run build
+        env:
+          # Provide dummy env vars if Next.js requires them during build phase
+          DATABASE_URL: "file:./dev.db"
+          NEXTAUTH_URL: "http://localhost:3000"
+          NEXTAUTH_SECRET: "dummy-secret"
+          OPENAI_API_KEY: "dummy-key"
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright Tests
+        run: npx playwright test
+        env:
+          DATABASE_URL: "file:./dev.db"
+          NEXTAUTH_URL: "http://localhost:3000"
+          NEXTAUTH_SECRET: "dummy-secret"
+          OPENAI_API_KEY: "dummy-key"
+
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  deploy:
+    name: Deploy to Production
+    needs: validate-and-test
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Trigger Deployment
+        run: |
+          echo "Pipeline passed successfully! Triggering deployment..."
+          echo "To finish setting this up, add your deployment provider's CLI commands here."
+          echo "For example, for Vercel:"
+          echo "npm i -g vercel"
+          echo "vercel pull --yes --environment=production --token=\${{ secrets.VERCEL_TOKEN }}"
+          echo "vercel build --prod --token=\${{ secrets.VERCEL_TOKEN }}"
+          echo "vercel deploy --prebuilt --prod --token=\${{ secrets.VERCEL_TOKEN }}"
